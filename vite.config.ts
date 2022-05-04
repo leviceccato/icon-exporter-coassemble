@@ -10,7 +10,7 @@ export default defineConfig({
     ],
     build: {
         cssCodeSplit: false,
-        assetsInlineLimit: 100000000,
+        assetsInlineLimit: 100_000_000,
         rollupOptions: {
             input: {
                 index: 'index.html',
