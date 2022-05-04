@@ -1,11 +1,11 @@
 import { reactive, readonly } from 'vue'
 
-const state = reactive<{ event: MessageEvent | null }>({
+const _state = reactive<{ event: MessageEvent | null }>({
     event: null
 })
 
-window.onmessage = event => state.event = event
+window.onmessage = event => _state.event = event
 
-const actions = {}
+export const state = readonly(_state)
 
-export const store = readonly({ state, ...actions })
+export const actions = readonly({})

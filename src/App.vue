@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
-import { store } from './store'
+import { state } from './store'
 
 const count = ref(5)
 const shouldRemoveStrokeAndFill = ref(true)
@@ -14,7 +14,7 @@ const cancel = () => {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
 }
 
-watch(() => store.state.event, event => {
+watch(() => state.event, event => {
     console.log(event?.data.pluginMessage)
 })
 </script>
