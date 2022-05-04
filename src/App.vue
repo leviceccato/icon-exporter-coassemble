@@ -36,9 +36,7 @@ watch(() => state.event, event => {
             <button class="button button--secondary" @click="cancel">Cancel</button>
         </div>
     </div>
-    <div :class="$style.canvas">
-        
-    </div>
+    <div :class="$style.canvas" />
 </template>
 
 <style>
