@@ -1,7 +1,11 @@
 import { reactive, readonly } from 'vue'
 
-const _state = reactive<{ event: MessageEvent | null }>({
-    event: null
+interface State {
+    event?: MessageEvent
+}
+
+const _state: State = reactive({
+    event: undefined
 })
 
 window.onmessage = event => _state.event = event
