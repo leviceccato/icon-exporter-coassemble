@@ -10,7 +10,7 @@ const iconName = ref('')
 const iconPrecision = ref(2)
 
 const iconId = computed(() => {
-    return `icon-${kebab(iconName.value)}`
+    return `${kebab(iconName.value)}-icon`
 })
 
 const iconPrecisionProgress = computed(() => {
