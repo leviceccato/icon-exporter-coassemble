@@ -17,10 +17,6 @@ const iconPrecisionProgress = computed(() => {
     return (iconPrecision.value - MIN_ICON_PRECISION) * (100 / (MAX_ICON_PRECISION - MIN_ICON_PRECISION));
 })
 
-const create = () => {
-    parent.postMessage({ pluginMessage: { type: 'create-rectangles', count: count.value } }, '*')
-}
-
 const kebab = (str: string): string => {
     const match = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
     if (match === null) {
@@ -92,13 +88,19 @@ watch(() => state.event, event => {
                     :style="{ '--progress-percentage': String(iconPrecisionProgress) }"
                     v-model="iconPrecision"
                 />
+                <div class="type type--small">
+                    {{ iconPrecision }}
+                </div>
             </div>
         </div>
     </div>
     <div :class="$style.divider" />
     <div :class="$style.container">
         <div :class="$style.row">
-            <button class="button button--primary" @click="create">Copy code</button>
+            <div class="icon-button">
+                <div class="icon icon--reverse"></div>
+            </div>
+            <button class="button button--primary" @click="void 0">Copy code</button>
             <button class="button button--secondary" @click="cancel">Cancel</button>
         </div>
     </div>
@@ -135,6 +137,11 @@ watch(() => state.event, event => {
     flex-direction: column;
     gap: 8px;
 }
+.range {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
 .rangeMain {
     width: 100%;
     display: flex;
@@ -143,7 +150,7 @@ watch(() => state.event, event => {
     -webkit-appearance: none;
     background: transparent;
     appearance: none;
-    cursor: pointer;
+    cursor: default;
     &::-webkit-slider-runnable-track {
         border: 1px solid var(--black);
         border-radius: 500px;
