@@ -20,23 +20,56 @@ watch(() => state.event, event => {
 </script>
 
 <template>
+    <div :class="$style.canvas" />
+    <div :class="$style.divider" />
     <div :class="$style.container">
-        <div class="type type--xlarge">Icon Exporter Coassemble</div>
-        <div class="input input--with-icon">
-            <div class="icon icon--angle" />
-            <input type="input" class="input__field" placeholder="Placeholder">
+        <div :class="$style.form">
+            <div :class="$style.input">
+                <div class="type">Name</div>
+                <div class="input">
+                    <input
+                        type="input"
+                        class="input__field"
+                        placeholder="Name"
+                    >
+                </div>
+            </div>
+            <div :class="$style.input">
+                <div class="type">Options</div>
+                <div class="checkbox">
+                    <input
+                        id="checkbox-remove-stroke-and-fill"
+                        type="checkbox"
+                        class="checkbox__box"
+                        v-model="shouldRemoveStrokeAndFill"
+                    >
+                    <label 
+                        for="checkbox-remove-stroke-and-fill"
+                        class="checkbox__label"
+                    >
+                        Remove fill and stroke
+                    </label>
+                </div>
+            </div>
+            <div :class="$style.input">
+                <div class="type">Precision</div>
+                <div :class="$style.range">
+                    <input
+                        id="range-precision"
+                        :class="$style.rangeMain"
+                        type="range"
+                    />
+                </div>
+            </div>
         </div>
-        <div class="label">Label</div>
-        <div class="checkbox">
-            <input id="uniqueId" type="checkbox" class="checkbox__box" v-model="shouldRemoveStrokeAndFill">
-            <label for="uniqueId" class="checkbox__label">Remove fill and stroke</label>
-        </div>
+    </div>
+    <div :class="$style.divider" />
+    <div :class="$style.container">
         <div :class="$style.row">
-            <button class="button button--primary" @click="create">Copy as SVG</button>
+            <button class="button button--primary" @click="create">Copy code</button>
             <button class="button button--secondary" @click="cancel">Cancel</button>
         </div>
     </div>
-    <div :class="$style.canvas" />
 </template>
 
 <style>
@@ -44,19 +77,33 @@ watch(() => state.event, event => {
 </style>
 
 <style module>
-.container { padding: 8px; }
+.container { padding: 16px; }
 .row {
     display: flex;
     gap: 8px;
+    justify-content: flex-end;
 }
 .divider {
     width: 100%;
     border-bottom: 1px solid var(--black1);
 }
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.input {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.rangeMain {
+    width: 100%;
+}
 .canvas {
-    --square-size: 25px;
+    --square-size: 24px;
     --square-colour: rgb(246, 246, 246);
-    height: 200px;
+    height: 240px;
     background-image:
         linear-gradient(45deg, var(--square-colour) 25%, transparent 25%),
         linear-gradient(135deg, var(--square-colour) 25%, transparent 25%),
