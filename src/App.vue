@@ -1,13 +1,33 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { state } from './store'
 
-const count = ref(5)
+const MIN_ICON_PRECISION = 0
+const MAX_ICON_PRECISION = 8
+
 const shouldRemoveStrokeAndFill = ref(true)
 const iconName = ref('')
+const iconPrecision = ref(2)
+
+const iconId = computed(() => {
+    return `icon-${kebab(iconName.value)}`
+})
+
+const iconPrecisionProgress = computed(() => {
+    return (iconPrecision.value - MIN_ICON_PRECISION) * (100 / (MAX_ICON_PRECISION - MIN_ICON_PRECISION));
+})
 
 const create = () => {
     parent.postMessage({ pluginMessage: { type: 'create-rectangles', count: count.value } }, '*')
+}
+
+const kebab = (str: string): string => {
+    const match = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
+    if (match === null) {
+        return ''
+    }
+
+    return match.map(c => c.toLowerCase()).join('-')
 }
 
 const cancel = () => {
@@ -23,43 +43,55 @@ watch(() => state.event, event => {
     <div :class="$style.canvas" />
     <div :class="$style.divider" />
     <div :class="$style.container">
-        <div :class="$style.form">
-            <div :class="$style.input">
-                <div class="type">Name</div>
-                <div class="input">
-                    <input
-                        type="input"
-                        class="input__field"
-                        placeholder="Name"
-                    >
-                </div>
+        <div :class="$style.input">
+            <div class="type type--bold">Name</div>
+            <div class="input">
+                <input
+                    type="input"
+                    class="input__field"
+                    placeholder="checkered-flag"
+                    v-model="iconName"
+                >
             </div>
-            <div :class="$style.input">
-                <div class="type">Options</div>
-                <div class="checkbox">
-                    <input
-                        id="checkbox-remove-stroke-and-fill"
-                        type="checkbox"
-                        class="checkbox__box"
-                        v-model="shouldRemoveStrokeAndFill"
-                    >
-                    <label 
-                        for="checkbox-remove-stroke-and-fill"
-                        class="checkbox__label"
-                    >
-                        Remove fill and stroke
-                    </label>
-                </div>
+            <div>
+                <span class="type">ID:</span> <span class="type type--mono">{{ iconId }}</span>
             </div>
-            <div :class="$style.input">
-                <div class="type">Precision</div>
-                <div :class="$style.range">
-                    <input
-                        id="range-precision"
-                        :class="$style.rangeMain"
-                        type="range"
-                    />
-                </div>
+        </div>
+    </div>
+    <div :class="$style.divider" />
+    <div :class="$style.container">
+        <div :class="$style.input">
+            <div class="type type--bold">Options</div>
+            <div class="checkbox">
+                <input
+                    id="checkbox-remove-stroke-and-fill"
+                    type="checkbox"
+                    class="checkbox__box"
+                    v-model="shouldRemoveStrokeAndFill"
+                >
+                <label 
+                    for="checkbox-remove-stroke-and-fill"
+                    class="checkbox__label"
+                >
+                    Remove fill and stroke
+                </label>
+            </div>
+        </div>
+    </div>
+    <div :class="$style.divider" />
+    <div :class="$style.container">
+        <div :class="$style.input">
+            <div class="type type--bold">Precision</div>
+            <div :class="$style.range">
+                <input
+                    id="range-precision"
+                    :class="$style.rangeMain"
+                    :max="MAX_ICON_PRECISION"
+                    :min="MIN_ICON_PRECISION"
+                    type="range"
+                    :style="{ '--progress-percentage': String(iconPrecisionProgress) }"
+                    v-model="iconPrecision"
+                />
             </div>
         </div>
     </div>
@@ -74,10 +106,16 @@ watch(() => state.event, event => {
 
 <style>
 @import 'figma-plugin-ds/dist/figma-plugin-ds.css';
+@import 'https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap';
+
+.type--fade { color: var(--black1); }
+.type--mono { font-family: 'Roboto Mono', monospace; }
 </style>
 
-<style module>
-.container { padding: 16px; }
+<style lang="scss" module>
+.container {
+    padding: 16px;
+}
 .row {
     display: flex;
     gap: 8px;
@@ -99,6 +137,49 @@ watch(() => state.event, event => {
 }
 .rangeMain {
     width: 100%;
+    display: flex;
+    margin: 0;
+    height: 32px;
+    -webkit-appearance: none;
+    background: transparent;
+    appearance: none;
+    cursor: pointer;
+    &::-webkit-slider-runnable-track {
+        border: 1px solid var(--black);
+        border-radius: 500px;
+        height: 5px;
+        background-image: linear-gradient(var(--black), var(--black));
+        background-size: calc(var(--progress-percentage, 0) * 1%) 100%;
+        background-repeat: no-repeat;
+    }
+    &::-moz-range-track {
+        border: 1px solid var(--black);
+        border-radius: 500px;
+        height: 5px;
+        background-image: linear-gradient(var(--black), var(--black));
+        background-size: calc(var(--progress-percentage, 0) * 1%) 100%;
+        background-repeat: no-repeat;
+    }
+    &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        margin-top: -4.5px;
+        background-color: var(--white);
+        border: 1px solid var(--black);
+        height: 12px;
+        width: 12px;
+        border-radius: 500px;    
+    }
+    &::-moz-range-thumb {
+        border: 1px solid var(--black);
+        border-radius: 500px;
+        background-color: var(--white);
+        height: 12px;
+        width: 12px;
+    }
+    &:focus {
+        outline: none;
+    }
 }
 .canvas {
     --square-size: 24px;
