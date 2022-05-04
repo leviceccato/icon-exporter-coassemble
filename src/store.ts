@@ -1,14 +1,10 @@
-import { reactive, readonly } from 'vue'
+import { ref, readonly } from 'vue'
 
-interface State {
-    event?: MessageEvent
+const _state = {
+    event: ref<MessageEvent>()
 }
 
-const _state: State = reactive({
-    event: undefined
-})
-
-window.onmessage = event => _state.event = event
+window.onmessage = event => _state.event.value = event
 
 export const state = readonly(_state)
 
