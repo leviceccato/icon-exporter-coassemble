@@ -6,6 +6,8 @@
         "preview": "vite preview"
     },
     "dependencies": {
+        "figma-plugin-ds": "^1.0.1",
+        "svgo": "^2.8.0",
         "vue": "^3.2.25"
     },
     "devDependencies": {
