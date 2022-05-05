@@ -1,15 +1,13 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue'
 import { state } from '../store'
-import { optimize } from 'svgo/dist/svgo.browser'
+import { optimize, OptimizeOptions } from 'svgo/dist/svgo.browser'
+import testSvg from '../test-svg.svg?raw'
 
 const MIN_ICON_PRECISION = 1
 const MAX_ICON_PRECISION = 5
 const DEFAULT_ICON_PRECISION = 2
 const DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL = true
-
-const TEST_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M12 7.00748C12.4142 7.00748 12.75 7.34327 12.75 7.75748V11.2501H16.2427C16.6569 11.2501 16.9926 11.5859 16.9927 12.0001C16.9926 12.4143 16.6569 12.7501 16.2427 12.7501H12.75V16.2428C12.75 16.657 12.4142 16.9928 12 16.9928C11.5858 16.9928 11.25 16.657 11.25 16.2428V12.7501H7.75737C7.34315 12.7501 7.00737 12.4143 7.00737 12.0001C7.00737 11.5859 7.34315 11.2501 7.75737 11.2501H11.25V7.75748C11.25 7.34327 11.5858 7.00748 12 7.00748Z" fill="#0F171F"/><path fill-rule="evenodd" clip-rule="evenodd" d="M5.10571 5.10583C1.2981 8.91344 1.2981 15.0868 5.10571 18.8944C8.91332 22.702 15.0867 22.702 18.8943 18.8944C22.7019 15.0868 22.7019 8.91344 18.8943 5.10583C15.0867 1.29822 8.91332 1.29822 5.10571 5.10583ZM6.16637 17.8338C2.94454 14.6119 2.94454 9.38832 6.16637 6.16649C9.38819 2.94467 14.6118 2.94467 17.8336 6.16649C21.0555 9.38832 21.0555 14.6119 17.8336 17.8338C14.6118 21.0556 9.38819 21.0556 6.16637 17.8338Z" fill="#0F171F"/></svg>`
 
 const shouldRemoveStrokeAndFill = ref(DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL)
 const iconName = ref('')
@@ -17,6 +15,7 @@ const iconPrecision = ref(DEFAULT_ICON_PRECISION)
 const svg = ref('')
 const optimisedSvg = ref('')
 const svgHost = ref<HTMLDivElement | null>(null)
+const optimisedSvgHost = ref<HTMLDivElement | null>(null)
 
 const iconId = computed(() => {
     return `${kebab(iconName.value)}-icon`
@@ -56,7 +55,7 @@ const cancel = () => {
 }
 
 const setTestSvg = () => {
-    svg.value = TEST_SVG
+    svg.value = testSvg
 }
 
 const setIconName = () => {
@@ -72,12 +71,74 @@ const setIconName = () => {
 }
 
 const setOptimisedSvg = () => {
-    const svgoOutput = optimize(svg.value, {
-        multipass: false
-    });
+    let config: OptimizeOptions = {
+        multipass: false,
+        plugins: [
+            'removeDoctype',
+            'removeXMLNS',
+            'removeDimensions',
+            'removeComments',
+            'removeMetadata',
+            'removeEditorsNSData',
+            'cleanupAttrs',
+            'mergeStyles',
+            'inlineStyles',
+            'minifyStyles',
+            'cleanupIDs',
+            'removeUnusedNS',
+            'convertColors',
+            'removeUnknownsAndDefaults',
+            'removeNonInheritableGroupAttrs',
+            'cleanupEnableBackground',
+            'removeHiddenElems',
+            'removeEmptyText',
+            'convertShapeToPath',
+            'moveElemsAttrsToGroup',
+            'moveGroupAttrsToElems',
+            'collapseGroups',
+            'convertEllipseToCircle',
+            'convertTransform',
+            'removeEmptyAttrs',
+            'removeEmptyContainers',
+            'mergePaths',
+            'removeUnusedNS',
+            'sortDefsChildren',
+            'removeDesc',
+            'removeTitle',
+            {
+                name: 'convertPathData',
+                params: {
+                    floatPrecision: iconPrecision.value
+                }
+            }
+        ]
+    }
+
+    if (shouldRemoveStrokeAndFill.value) {
+        config.plugins?.push({
+            name: 'removeAttrs',
+            params: {
+                attrs: '(fill|stroke)'
+            }
+        })
+    }
+
+    const svgoOutput = optimize(svg.value, config);
 
     if (svgoOutput.error === undefined) {
         optimisedSvg.value = svgoOutput.data
+        applyPostTransforms()
+    }
+}
+
+const applyPostTransforms = async () => {
+    await nextTick()
+
+    const svgEl = optimisedSvgHost.value?.querySelector('svg')
+    if (svgEl) {
+        svgEl.id = iconId.value
+        svgEl.setAttribute('role', 'img')
+        svgEl.setAttribute('aria-label', `${iconName.value} Icon`)
     }
 }
 
@@ -85,6 +146,10 @@ watch(svg, async () => {
     await nextTick()
 
     setIconName()
+    setOptimisedSvg()
+})
+
+watch([iconPrecision, shouldRemoveStrokeAndFill], () => {
     setOptimisedSvg()
 })
 
@@ -306,9 +371,23 @@ watch(() => state.event, event => {
     background: util.eased-gradient((
         angle: 'circle at center',
         type: 'radial',
-        start-colour: rgba(0 0 0 / 0.4),
+        start-colour: rgba(0 0 0 / 0.5),
         end-colour: rgba(0 0 0 / 0)
     ));
 }
-.svgHost { opacity: 0; }
+.svgHost {
+    opacity: 0;
+    position: absolute;
+}
+.optimisedSvgHost {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    svg {
+        width: 80%;
+        height: 80%;
+    }
+}
 </style>
