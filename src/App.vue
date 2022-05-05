@@ -27,11 +27,7 @@ const kebab = (str: string): string => {
     return match.map(c => c.toLowerCase()).join('-')
 }
 
-const setSvg = (arr: Uint8Array | null) => {
-    if (arr === null) {
-        svg.value = ''
-        return
-    }
+const setSvg = (arr: Uint8Array) => {
     svg.value = new TextDecoder().decode(arr)
 }
 
