@@ -35,6 +35,7 @@ const isValid = computed(() => {
 const reset = () => {
     iconPrecision.value = DEFAULT_ICON_PRECISION
     shouldRemoveStrokeAndFill.value = DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL
+    setIconName()
 }
 
 const kebab = (str: string): string => {
@@ -254,7 +255,7 @@ watch(() => state.event, event => {
             >
                 Copy code
             </button>
-            <button class="button button--secondary" @click="setTestSvg">Cancel</button>
+            <button class="button button--secondary" @click="cancel">Cancel</button>
         </div>
     </div>
 </template>
