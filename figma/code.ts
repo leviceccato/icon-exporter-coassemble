@@ -58,7 +58,6 @@ figma.on('selectionchange', async () => {
         })
 
         figma.ui.postMessage({ type, payload })
-
         break
     }
 })
