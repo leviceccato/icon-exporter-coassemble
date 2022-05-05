@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue'
 import { state } from '../store'
-import { optimize } from '../svgo'
+import { optimize } from 'svgo/dist/svgo.browser'
 
 const MIN_ICON_PRECISION = 1
 const MAX_ICON_PRECISION = 5
