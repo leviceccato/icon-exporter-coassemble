@@ -66,12 +66,16 @@ watch(() => state.event, event => {
 <template>
     <div :class="$style.canvas">
         <div
+            v-if="svg"
             :class="$style.svgHost"
             v-html="svg"
         />
-        <!-- <div :class="$style.canvasOverlay">
-            <div class="type
-        </div> -->
+        <div
+            v-else
+            :class="$style.canvasOverlay"
+        >
+            <div class="type type--inverse">Select an icon <br />component</div>
+        </div>
     </div>
     <div :class="$style.divider" />
     <div :class="$style.container">
@@ -231,6 +235,7 @@ watch(() => state.event, event => {
     }
 }
 .canvas {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -244,5 +249,16 @@ watch(() => state.event, event => {
         linear-gradient(135deg, transparent 75%, var(--square-colour) 75%);
     background-size: var(--square-size) var(--square-size);
     background-position: 0 0, calc(0.5 * var(--square-size)) 0, calc(0.5 * var(--square-size)) calc(-0.5 * var(--square-size)), 0 calc(0.5 * var(--square-size));
+}
+.canvasOverlay {
+    text-align: center;
+    color: var(--white);
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(0,0,0,0.5494791666666667) 14%, rgba(0,0,0,0.3505996148459384) 100%);
+    background-repeat: no-repeat;
 }
 </style>
