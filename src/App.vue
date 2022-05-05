@@ -39,9 +39,8 @@ watch(() => state.event, event => {
     const data = event?.data.pluginMessage
     if (!data) return
 
-    switch (data.type) {
-        case 'set-svg':
-            setSvg(data.payload)
+    if (data.type === 'set-svg') {
+        setSvg(data.payload)
     }
 })
 </script>
