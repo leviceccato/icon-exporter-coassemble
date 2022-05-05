@@ -2,21 +2,39 @@
 import { ref, watch, computed } from 'vue'
 import { state } from './store'
 
-const MIN_ICON_PRECISION = 0
-const MAX_ICON_PRECISION = 8
+const MIN_ICON_PRECISION = 1
+const MAX_ICON_PRECISION = 5
+const DEFAULT_ICON_PRECISION = 2
+const DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL = true
 
-const shouldRemoveStrokeAndFill = ref(true)
+const shouldRemoveStrokeAndFill = ref(DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL)
 const iconName = ref('')
-const iconPrecision = ref(2)
+const iconPrecision = ref(DEFAULT_ICON_PRECISION)
 const svg = ref('')
 
 const iconId = computed(() => {
     return `${kebab(iconName.value)}-icon`
 })
 
+const optimisedSvg = computed(() => {
+    return ''
+})
+
 const iconPrecisionProgress = computed(() => {
     return (iconPrecision.value - MIN_ICON_PRECISION) * (100 / (MAX_ICON_PRECISION - MIN_ICON_PRECISION));
 })
+
+const isValid = computed(() => {
+    return (
+        (iconName.value !== '') &&
+        (optimisedSvg.value !== '')
+    )
+})
+
+const reset = () => {
+    iconPrecision.value = DEFAULT_ICON_PRECISION
+    shouldRemoveStrokeAndFill.value = DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL
+}
 
 const kebab = (str: string): string => {
     const match = str.match(/[A-Z]{2,}(?=[A-Z][a-z]+[0-9]*|\b)|[A-Z]?[a-z]+[0-9]*|[A-Z]|[0-9]+/g)
@@ -46,10 +64,15 @@ watch(() => state.event, event => {
 </script>
 
 <template>
-    <div
-        :class="$style.canvas"
-        v-html="svg"
-    />
+    <div :class="$style.canvas">
+        <div
+            :class="$style.svgHost"
+            v-html="svg"
+        />
+        <!-- <div :class="$style.canvasOverlay">
+            <div class="type
+        </div> -->
+    </div>
     <div :class="$style.divider" />
     <div :class="$style.container">
         <div :class="$style.input">
@@ -110,10 +133,16 @@ watch(() => state.event, event => {
     <div :class="$style.divider" />
     <div :class="$style.container">
         <div :class="$style.row">
-            <div class="icon-button">
+            <div class="icon-button" @click="reset">
                 <div class="icon icon--reverse"></div>
             </div>
-            <button class="button button--primary" @click="void 0">Copy code</button>
+            <button
+                class="button button--primary"
+                :disabled="!isValid"
+                @click="void 0"
+            >
+                Copy code
+            </button>
             <button class="button button--secondary" @click="cancel">Cancel</button>
         </div>
     </div>

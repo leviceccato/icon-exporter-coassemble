@@ -44,20 +44,14 @@ figma.on('selectionchange', async () => {
 
     let payload: Uint8Array
 
-    if (nodes.length === 0) {
-        figma.ui.postMessage({ type, payload })
-        return
-    }
-
     for (const node of nodes) {
-        if (node.type !== 'VECTOR') return
-
-        payload = await node.exportAsync({
-            format: 'SVG',
-            svgIdAttribute: true
-        })
-
-        figma.ui.postMessage({ type, payload })
-        break
+        if (node.type === 'COMPONENT') {
+            payload = await node.exportAsync({
+                format: 'SVG',
+                svgIdAttribute: true
+            })
+        }
     }
+
+    figma.ui.postMessage({ type, payload })
 })
