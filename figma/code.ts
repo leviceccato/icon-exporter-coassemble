@@ -40,27 +40,24 @@ figma.ui.onmessage = msg => {
 
 figma.on('selectionchange', async () => {
     const nodes = figma.currentPage.selection
+    const type = 'set-svg'
+
+    let payload: Uint8Array
 
     if (nodes.length === 0) {
-        figma.ui.postMessage({
-            type: 'set-svg',
-            payload: null
-        })
+        figma.ui.postMessage({ type, payload })
         return
     }
 
     for (const node of nodes) {
         if (node.type !== 'VECTOR') return
 
-        const svg = await node.exportAsync({
+        payload = await node.exportAsync({
             format: 'SVG',
             svgIdAttribute: true
         })
 
-        figma.ui.postMessage({
-            type: 'set-svg',
-            payload: svg
-        })
+        figma.ui.postMessage({ type, payload })
 
         break
     }
