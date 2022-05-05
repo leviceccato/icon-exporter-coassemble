@@ -8,6 +8,7 @@ const MAX_ICON_PRECISION = 8
 const shouldRemoveStrokeAndFill = ref(true)
 const iconName = ref('')
 const iconPrecision = ref(2)
+const svg = ref('')
 
 const iconId = computed(() => {
     return `${kebab(iconName.value)}-icon`
@@ -26,17 +27,34 @@ const kebab = (str: string): string => {
     return match.map(c => c.toLowerCase()).join('-')
 }
 
+const setSvg = (arr: Uint8Array | null) => {
+    if (arr === null) {
+        svg.value = ''
+        return
+    }
+    svg.value = new TextDecoder().decode(arr)
+}
+
 const cancel = () => {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
 }
 
 watch(() => state.event, event => {
-    console.log(event?.data.pluginMessage)
+    const data = event?.data.pluginMessage
+    if (!data) return
+
+    switch (data.type) {
+        case 'set-svg':
+            setSvg(data.payload)
+    }
 })
 </script>
 
 <template>
-    <div :class="$style.canvas" />
+    <div
+        :class="$style.canvas"
+        v-html="svg"
+    />
     <div :class="$style.divider" />
     <div :class="$style.container">
         <div :class="$style.input">
@@ -175,7 +193,7 @@ watch(() => state.event, event => {
         border: 1px solid var(--black);
         height: 12px;
         width: 12px;
-        border-radius: 500px;    
+        border-radius: 500px;
     }
     &::-moz-range-thumb {
         border: 1px solid var(--black);
@@ -189,9 +207,12 @@ watch(() => state.event, event => {
     }
 }
 .canvas {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     --square-size: 24px;
     --square-colour: rgb(246, 246, 246);
-    height: 240px;
+    height: 144px;
     background-image:
         linear-gradient(45deg, var(--square-colour) 25%, transparent 25%),
         linear-gradient(135deg, var(--square-colour) 25%, transparent 25%),
