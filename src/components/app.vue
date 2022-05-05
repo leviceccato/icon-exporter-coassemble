@@ -1,23 +1,25 @@
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
-import { state } from './store'
+import { ref, watch, computed, nextTick } from 'vue'
+import { state } from '../store'
+import { optimize } from '../svgo'
 
 const MIN_ICON_PRECISION = 1
 const MAX_ICON_PRECISION = 5
 const DEFAULT_ICON_PRECISION = 2
 const DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL = true
 
+const TEST_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M12 7.00748C12.4142 7.00748 12.75 7.34327 12.75 7.75748V11.2501H16.2427C16.6569 11.2501 16.9926 11.5859 16.9927 12.0001C16.9926 12.4143 16.6569 12.7501 16.2427 12.7501H12.75V16.2428C12.75 16.657 12.4142 16.9928 12 16.9928C11.5858 16.9928 11.25 16.657 11.25 16.2428V12.7501H7.75737C7.34315 12.7501 7.00737 12.4143 7.00737 12.0001C7.00737 11.5859 7.34315 11.2501 7.75737 11.2501H11.25V7.75748C11.25 7.34327 11.5858 7.00748 12 7.00748Z" fill="#0F171F"/><path fill-rule="evenodd" clip-rule="evenodd" d="M5.10571 5.10583C1.2981 8.91344 1.2981 15.0868 5.10571 18.8944C8.91332 22.702 15.0867 22.702 18.8943 18.8944C22.7019 15.0868 22.7019 8.91344 18.8943 5.10583C15.0867 1.29822 8.91332 1.29822 5.10571 5.10583ZM6.16637 17.8338C2.94454 14.6119 2.94454 9.38832 6.16637 6.16649C9.38819 2.94467 14.6118 2.94467 17.8336 6.16649C21.0555 9.38832 21.0555 14.6119 17.8336 17.8338C14.6118 21.0556 9.38819 21.0556 6.16637 17.8338Z" fill="#0F171F"/></svg>`
+
 const shouldRemoveStrokeAndFill = ref(DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL)
 const iconName = ref('')
 const iconPrecision = ref(DEFAULT_ICON_PRECISION)
 const svg = ref('')
+const optimisedSvg = ref('')
+const svgHost = ref<HTMLDivElement | null>(null)
 
 const iconId = computed(() => {
     return `${kebab(iconName.value)}-icon`
-})
-
-const optimisedSvg = computed(() => {
-    return ''
 })
 
 const iconPrecisionProgress = computed(() => {
@@ -53,6 +55,39 @@ const cancel = () => {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
 }
 
+const setTestSvg = () => {
+    svg.value = TEST_SVG
+}
+
+const setIconName = () => {
+    let newIconName = ''
+
+    const idEl = svgHost.value?.querySelector('[id]')
+    if (idEl) {
+        newIconName = idEl.getAttribute('id') || ''
+    }
+
+    if (newIconName === '') return
+    iconName.value = newIconName.replace(/icon/gi, '')
+}
+
+const setOptimisedSvg = () => {
+    const svgoOutput = optimize(svg.value, {
+        multipass: false
+    });
+
+    if (svgoOutput.error === undefined) {
+        optimisedSvg.value = svgoOutput.data
+    }
+}
+
+watch(svg, async () => {
+    await nextTick()
+
+    setIconName()
+    setOptimisedSvg()
+})
+
 watch(() => state.event, event => {
     const data = event?.data.pluginMessage
     if (!data) return
@@ -68,10 +103,17 @@ watch(() => state.event, event => {
         <div
             v-if="svg"
             :class="$style.svgHost"
+            ref="svgHost"
             v-html="svg"
         />
         <div
-            v-else
+            v-if="optimisedSvg"
+            :class="$style.optimisedSvgHost"
+            ref="optimisedSvgHost"
+            v-html="optimisedSvg"
+        />
+        <div
+            v-if="!svg"
             :class="$style.canvasOverlay"
         >
             <div class="type type--inverse">Select an icon <br />component</div>
@@ -85,7 +127,7 @@ watch(() => state.event, event => {
                 <input
                     type="input"
                     class="input__field"
-                    placeholder="checkered-flag"
+                    placeholder="Checkered Flag"
                     v-model="iconName"
                 >
             </div>
@@ -147,12 +189,12 @@ watch(() => state.event, event => {
             >
                 Copy code
             </button>
-            <button class="button button--secondary" @click="cancel">Cancel</button>
+            <button class="button button--secondary" @click="setTestSvg">Cancel</button>
         </div>
     </div>
 </template>
 
-<style>
+<style lang="scss">
 @import 'figma-plugin-ds/dist/figma-plugin-ds.css';
 @import 'https://fonts.googleapis.com/css2?family=Roboto+Mono&display=swap';
 
@@ -161,6 +203,8 @@ watch(() => state.event, event => {
 </style>
 
 <style lang="scss" module>
+@use '../styles/util.scss';
+
 .container {
     padding: 16px;
 }
@@ -208,7 +252,7 @@ watch(() => state.event, event => {
     &::-moz-range-track {
         border: 1px solid var(--black);
         border-radius: 500px;
-        height: 5px;
+        height: 5px; 
         background-image: linear-gradient(var(--black), var(--black));
         background-size: calc(var(--progress-percentage, 0) * 1%) 100%;
         background-repeat: no-repeat;
@@ -233,7 +277,7 @@ watch(() => state.event, event => {
     &:focus {
         outline: none;
     }
-}
+} 
 .canvas {
     position: relative;
     display: flex;
@@ -241,7 +285,7 @@ watch(() => state.event, event => {
     justify-content: center;
     --square-size: 24px;
     --square-colour: rgb(246, 246, 246);
-    height: 144px;
+    height: 240px;
     background-image:
         linear-gradient(45deg, var(--square-colour) 25%, transparent 25%),
         linear-gradient(135deg, var(--square-colour) 25%, transparent 25%),
@@ -258,7 +302,13 @@ watch(() => state.event, event => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: radial-gradient(circle, rgba(0,0,0,0.5494791666666667) 14%, rgba(0,0,0,0.3505996148459384) 100%);
     background-repeat: no-repeat;
+    background: util.eased-gradient((
+        angle: 'circle at center',
+        type: 'radial',
+        start-colour: rgba(0 0 0 / 0.4),
+        end-colour: rgba(0 0 0 / 0)
+    ));
 }
+.svgHost { opacity: 0; }
 </style>
