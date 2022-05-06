@@ -1,8 +1,8 @@
 /// <reference types="@figma/plugin-typings" />
 
 figma.showUI(__html__, {
-    width: 240,
-    height: 600
+    width: 264,
+    height: 552
 })
 
 figma.ui.onmessage = msg => {

@@ -287,7 +287,7 @@ watch(() => state.event, event => {
     <div :class="$style.divider" />
     <div :class="$style.container">
         <div :class="$style.row">
-            <div class="icon-button" @click="reset">
+            <div :class="[$style.resetButton, 'icon-button']" @click="reset">
                 <div class="icon icon--reverse"></div>
             </div>
             <button
@@ -408,7 +408,7 @@ watch(() => state.event, event => {
     justify-content: center;
     --square-size: 24px;
     --square-colour: rgb(246, 246, 246);
-    height: 240px;
+    height: 192px;
     background-image:
         linear-gradient(45deg, var(--square-colour) 25%, transparent 25%),
         linear-gradient(135deg, var(--square-colour) 25%, transparent 25%),
@@ -457,4 +457,5 @@ watch(() => state.event, event => {
     transform: translate(-50%, -50%);
     opacity: 0;
 }
+.resetButton { margin-right: auto; }
 </style>
