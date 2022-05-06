@@ -69,7 +69,7 @@ const setIconName = () => {
     }
 
     if (newIconName === '') return
-    iconName.value = newIconName.replace(/icon/gi, '')
+    iconName.value = newIconName.replace(/icon/gi, '').trim()
 }
 
 const setOptimisedSvg = () => {
