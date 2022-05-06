@@ -16,7 +16,7 @@ figma.on('selectionchange', async () => {
     let payload: Uint8Array
 
     for (const node of nodes) {
-        if (node.type === 'COMPONENT') {
+        if ((node.type === 'COMPONENT') || (node.type === 'INSTANCE')) {
             payload = await node.exportAsync({
                 format: 'SVG',
                 svgIdAttribute: true
