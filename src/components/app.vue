@@ -16,6 +16,7 @@ const svg = ref('')
 const optimisedSvg = ref('')
 const svgHost = ref<HTMLDivElement | null>(null)
 const optimisedSvgHost = ref<HTMLDivElement | null>(null)
+const optimisedSvgDefs = ref<HTMLDivElement | null>(null)
 
 const iconId = computed(() => {
     return `${kebab(iconName.value)}-icon`
@@ -135,12 +136,20 @@ const setOptimisedSvg = () => {
 const applyPostTransforms = async () => {
     await nextTick()
 
-    const svgEl = optimisedSvgHost.value?.querySelector('svg')
-    if (svgEl) {
-        svgEl.id = iconId.value
-        svgEl.setAttribute('role', 'img')
-        svgEl.setAttribute('aria-label', `${iconName.value} Icon`)
-    }
+    const defs = optimisedSvgDefs.value
+    if (!defs) return
+
+    const svgEl = defs.querySelector('svg')
+    if (!svgEl) return
+
+    const symbolEl = document.createElementNS('http://www.w3.org/2000/svg', 'symbol')
+    symbolEl.id = iconId.value
+    symbolEl.setAttribute('role', 'img')
+    symbolEl.setAttribute('aria-label', `${iconName.value} Icon`)
+    symbolEl.setAttribute('viewBox', svgEl.getAttribute('viewBox') || '')
+    symbolEl.innerHTML = svgEl.innerHTML
+
+    defs.replaceChild(symbolEl, svgEl)
 }
 
 watch(svg, async () => {
@@ -165,6 +174,12 @@ watch(() => state.event, event => {
 </script>
 
 <template>
+    <svg :class="$style.optimisedSvgDefs">
+        <defs
+            ref="optimisedSvgDefs"
+            v-html="optimisedSvg"
+        />
+    </svg>
     <div :class="$style.canvas">
         <div
             v-if="svg"
@@ -172,12 +187,12 @@ watch(() => state.event, event => {
             ref="svgHost"
             v-html="svg"
         />
-        <div
+        <svg
             v-if="optimisedSvg"
             :class="$style.optimisedSvgHost"
-            ref="optimisedSvgHost"
-            v-html="optimisedSvg"
-        />
+        >
+            <use :xlink:href="`#${iconId}`" />
+        </svg>
         <div
             v-if="!svg"
             :class="$style.canvasOverlay"
@@ -255,7 +270,7 @@ watch(() => state.event, event => {
             >
                 Copy code
             </button>
-            <button class="button button--secondary" @click="cancel">Cancel</button>
+            <button class="button button--secondary" @click="setTestSvg">Cancel</button>
         </div>
     </div>
 </template>
@@ -389,14 +404,9 @@ watch(() => state.event, event => {
     position: absolute;
 }
 .optimisedSvgHost {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    svg {
-        width: 80%;
-        height: 80%;
-    }
+    width: 80%;
+    height: 80%;
+    fill: currentColor;
 }
+.optimisedSvgDefs { display: none; }
 </style>
