@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, nextTick } from 'vue'
+import copy from 'copy-text-to-clipboard'
 import { state } from '../store'
 import { optimize, OptimizeOptions } from 'svgo/dist/svgo.browser'
 import testSvg from '../test-svg.svg?raw'
@@ -169,7 +170,7 @@ const copyCode = async () => {
     const symbolEl = optimisedSvgDefs.value?.querySelector('symbol')
     if (!symbolEl) return
 
-    await navigator.clipboard.writeText(symbolEl.outerHTML)
+    copy(symbolEl.outerHTML)
 
     clearTimeout(copyNotifcationTimer)
     showCopyNotification.value = true
