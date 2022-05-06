@@ -147,9 +147,8 @@ const applyPostTransforms = async () => {
     if (!svgEl) return
 
     const symbolEl = document.createElementNS('http://www.w3.org/2000/svg', 'symbol')
-    symbolEl.id = iconId.value
+    updateIconData(symbolEl)
     symbolEl.setAttribute('role', 'img')
-    symbolEl.setAttribute('aria-label', `${iconName.value} Icon`)
     symbolEl.setAttribute('viewBox', svgEl.getAttribute('viewBox') || '')
     symbolEl.innerHTML = svgEl.innerHTML
 
@@ -179,6 +178,11 @@ const copyCode = async () => {
     }, 1_500)
 }
 
+const updateIconData = (symbolEl: SVGSymbolElement) => {
+    symbolEl.id = iconId.value
+    symbolEl.setAttribute('aria-label', `${iconName.value} Icon`)
+}
+
 watch(svg, async () => {
     await nextTick()
 
@@ -188,6 +192,16 @@ watch(svg, async () => {
 
 watch([iconPrecision, shouldRemoveStrokeAndFill], () => {
     setOptimisedSvg()
+})
+
+watch(iconName, () => {
+    const defs = optimisedSvgDefs.value
+    if (!defs) return
+
+    const symbolEl = defs.querySelector('symbol')
+    if (!symbolEl) return
+
+    updateIconData(symbolEl)
 })
 
 watch(() => state.event, event => {
