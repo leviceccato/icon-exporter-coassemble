@@ -149,6 +149,16 @@ const applyPostTransforms = async () => {
     symbolEl.setAttribute('viewBox', svgEl.getAttribute('viewBox') || '')
     symbolEl.innerHTML = svgEl.innerHTML
 
+    const fill = svgEl.getAttribute('fill')
+    if (fill) {
+        symbolEl.setAttribute('fill', fill)
+    }
+
+    const stroke = svgEl.getAttribute('stroke')
+    if (stroke) {
+        symbolEl.setAttribute('stroke', stroke)
+    }
+
     defs.replaceChild(symbolEl, svgEl)
 }
 
