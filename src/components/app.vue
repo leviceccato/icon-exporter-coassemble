@@ -17,6 +17,9 @@ const optimisedSvg = ref('')
 const svgHost = ref<HTMLDivElement | null>(null)
 const optimisedSvgHost = ref<HTMLDivElement | null>(null)
 const optimisedSvgDefs = ref<HTMLDivElement | null>(null)
+const showCopyNotification = ref(false)
+
+let copyNotifcationTimer: ReturnType<typeof setTimeout>
 
 const iconId = computed(() => {
     return `${kebab(iconName.value)}-icon`
@@ -162,6 +165,19 @@ const applyPostTransforms = async () => {
     defs.replaceChild(symbolEl, svgEl)
 }
 
+const copyCode = async () => {
+    const symbolEl = optimisedSvgDefs.value?.querySelector('symbol')
+    if (!symbolEl) return
+
+    await navigator.clipboard.writeText(symbolEl.outerHTML)
+
+    clearTimeout(copyNotifcationTimer)
+    showCopyNotification.value = true
+    copyNotifcationTimer = setTimeout(() => {
+        showCopyNotification.value = false
+    }, 1_500)
+}
+
 watch(svg, async () => {
     await nextTick()
 
@@ -276,11 +292,18 @@ watch(() => state.event, event => {
             <button
                 class="button button--primary"
                 :disabled="!isValid"
-                @click="void 0"
+                @click="copyCode"
             >
-                Copy code
+                <span :class="[$style.copyButtonTextContainer, { [$style.notify]: showCopyNotification }]">
+                    <span :class="$style.copyButtonTextMain">
+                        Copy code
+                    </span>
+                    <span :class="$style.copyButtonTextTemp">
+                        Copied!
+                    </span>
+                </span>
             </button>
-            <button class="button button--secondary" @click="setTestSvg">Cancel</button>
+            <button class="button button--secondary" @click="cancel">Cancel</button>
         </div>
     </div>
 </template>
@@ -419,4 +442,18 @@ watch(() => state.event, event => {
     fill: currentColor;
 }
 .optimisedSvgDefs { display: none; }
+.copyButtonTextContainer {
+    position: relative;
+    &.notify {
+        .copyButtonTextMain { opacity: 0; }
+        .copyButtonTextTemp { opacity: 1; }
+    }
+}
+.copyButtonTextTemp {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0;
+}
 </style>
