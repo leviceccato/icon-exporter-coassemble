@@ -9,20 +9,21 @@ figma.ui.onmessage = msg => {
     figma.closePlugin()
 }
 
-figma.on('selectionchange', async () => {
-    const nodes = figma.currentPage.selection
-    const type = 'set-svg'
-
+const setSvg = async () => {
     let payload: Uint8Array
 
-    for (const node of nodes) {
+    for (const node of figma.currentPage.selection) {
         if ((node.type === 'COMPONENT') || (node.type === 'INSTANCE')) {
             payload = await node.exportAsync({
                 format: 'SVG',
                 svgIdAttribute: true
             })
+            break
         }
     }
 
-    figma.ui.postMessage({ type, payload })
-})
+    figma.ui.postMessage({ type: 'set-svg', payload })
+}
+
+setSvg()
+figma.on('selectionchange', setSvg)
