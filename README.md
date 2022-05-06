@@ -1,4 +1,4 @@
-# Icon Exporter Coassemble
+# Icon Exporter for Coassemble
 
 🎨 A Figma plugin that helps with exporting icons for Coassemble. Built with Vite, Vue and TypeScript.
 
