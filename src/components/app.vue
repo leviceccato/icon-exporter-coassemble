@@ -37,7 +37,7 @@ const isValid = computed(() => {
     )
 })
 
-const reset = () => {
+const reset = (): void => {
     iconPrecision.value = DEFAULT_ICON_PRECISION
     shouldRemoveStrokeAndFill.value = DEFAULT_SHOULD_REMOVE_STROKE_AND_FILL
     setIconName()
@@ -52,19 +52,19 @@ const kebab = (str: string): string => {
     return match.map(c => c.toLowerCase()).join('-')
 }
 
-const setSvg = (arr: Uint8Array) => {
+const setSvg = (arr: Uint8Array): void => {
     svg.value = new TextDecoder().decode(arr)
 }
 
-const cancel = () => {
+const cancel = (): void => {
     parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
 }
 
-const setTestSvg = () => {
+const setTestSvg = (): void => {
     svg.value = testSvg
 }
 
-const setIconName = () => {
+const setIconName = (): void => {
     let newIconName = ''
 
     const idEl = svgHost.value?.querySelector('[id]')
@@ -76,7 +76,7 @@ const setIconName = () => {
     iconName.value = newIconName.replace(/icon/gi, '').trim()
 }
 
-const setOptimisedSvg = () => {
+const setOptimisedSvg = (): void => {
     let config: OptimizeOptions = {
         multipass: false,
         plugins: [
@@ -137,7 +137,7 @@ const setOptimisedSvg = () => {
     }
 }
 
-const applyPostTransforms = async () => {
+const applyPostTransforms = async (): Promise<void> => {
     await nextTick()
 
     const defs = optimisedSvgDefs.value
@@ -165,7 +165,7 @@ const applyPostTransforms = async () => {
     defs.replaceChild(symbolEl, svgEl)
 }
 
-const copyCode = async () => {
+const copyCode = (): void => {
     const symbolEl = optimisedSvgDefs.value?.querySelector('symbol')
     if (!symbolEl) return
 
@@ -178,23 +178,23 @@ const copyCode = async () => {
     }, 1_500)
 }
 
-const updateIconData = (symbolEl: SVGSymbolElement) => {
+const updateIconData = (symbolEl: SVGSymbolElement): void => {
     symbolEl.id = iconId.value
     symbolEl.setAttribute('aria-label', `${iconName.value} Icon`)
 }
 
-watch(svg, async () => {
+watch(svg, async (): Promise<void> => {
     await nextTick()
 
     setIconName()
     setOptimisedSvg()
 })
 
-watch([iconPrecision, shouldRemoveStrokeAndFill], () => {
+watch([iconPrecision, shouldRemoveStrokeAndFill], (): void => {
     setOptimisedSvg()
 })
 
-watch(iconName, () => {
+watch(iconName, (): void => {
     const defs = optimisedSvgDefs.value
     if (!defs) return
 
@@ -204,7 +204,7 @@ watch(iconName, () => {
     updateIconData(symbolEl)
 })
 
-watch(() => state.event, event => {
+watch(() => state.event, (event): void => {
     const data = event?.data.pluginMessage
     if (!data) return
 
