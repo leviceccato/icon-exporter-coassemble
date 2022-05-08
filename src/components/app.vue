@@ -195,10 +195,7 @@ watch([iconPrecision, shouldRemoveStrokeAndFill], (): void => {
 })
 
 watch(iconName, (): void => {
-    const defs = optimisedSvgDefs.value
-    if (!defs) return
-
-    const symbolEl = defs.querySelector('symbol')
+    const symbolEl = optimisedSvgDefs.value?.querySelector('symbol')
     if (!symbolEl) return
 
     updateIconData(symbolEl)
